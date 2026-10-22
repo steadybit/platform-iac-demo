@@ -1,0 +1,182 @@
+name: Unavailable downstream deployment of checkout doesn't result in user-visible
+  errors
+hypothesis: When the downstream service of Kubernetes deployment checkout is not available,
+  an HTTP endpoint offered upstream should still work within the success rate 95.
+team: CHK
+environment: Checkout
+externalId: chk-downstream
+lanes:
+- steps:
+  - type: action
+    ignoreFailure: false
+    parameters:
+      headers: []
+      method: GET
+      successRate: 95
+      maxConcurrent: 5
+      responseTime: 500ms
+      requestsPerSecond: 10
+      url: http://gateway.steadybit-shopping-demo.svc.cluster.local/products
+      failEarly: false
+      duration: 180s
+      responseTimeMeasurement: TIME_TO_FIRST_BYTE
+      followRedirects: false
+      readTimeout: 5s
+      insecureSkipVerify: false
+      connectTimeout: 5s
+      responseTimeMode: NO_VERIFICATION
+      statusCode: 200-299
+    customLabel: Upstream HTTP API is working within 95% success rate
+    actionType: com.steadybit.extension_http.check.periodically
+- steps:
+  - type: action
+    ignoreFailure: false
+    parameters:
+      duration: 20s
+      statusCheckMode: atLeastOnce
+      podCountCheckMode: podCountEqualsDesiredCount
+      failEarly: true
+    customLabel: 'GIVEN: All pods of checkout are ready'
+    actionType: com.steadybit.extension_kubernetes.pod_count_check
+    radius:
+      targetType: com.steadybit.extension_kubernetes.kubernetes-deployment
+      predicate:
+        operator: AND
+        predicates:
+        - key: k8s.cluster-name
+          operator: EQUALS
+          values:
+          - minikube
+        - key: k8s.namespace
+          operator: EQUALS
+          values:
+          - steadybit-shopping-demo
+        - key: k8s.deployment
+          operator: EQUALS
+          values:
+          - checkout
+- steps:
+  - type: wait
+    ignoreFailure: false
+    parameters:
+      duration: 20s
+  - type: action
+    ignoreFailure: false
+    parameters:
+      duration: 60s
+      excludeIp: []
+      hostname: []
+      port: []
+      ip: []
+      failOnHostNetwork: true
+      blockLocalhost: false
+      excludeHostname: []
+    customLabel: 'WHEN: All pods of checkout can''t be reached'
+    actionType: com.steadybit.extension_container.network_blackhole
+    radius:
+      targetType: com.steadybit.extension_container.container
+      predicate:
+        operator: AND
+        predicates:
+        - key: k8s.cluster-name
+          operator: EQUALS
+          values:
+          - minikube
+        - key: k8s.namespace
+          operator: EQUALS
+          values:
+          - steadybit-shopping-demo
+        - key: k8s.deployment
+          operator: EQUALS
+          values:
+          - checkout
+      percentage: 100
+  - type: action
+    ignoreFailure: false
+    parameters:
+      duration: 60s
+      statusCheckMode: atLeastOnce
+      podCountCheckMode: podCountEqualsDesiredCount
+      failEarly: true
+    customLabel: 'THEN: All pods of checkout become ready again within 60s'
+    actionType: com.steadybit.extension_kubernetes.pod_count_check
+    radius:
+      targetType: com.steadybit.extension_kubernetes.kubernetes-deployment
+      predicate:
+        operator: AND
+        predicates:
+        - key: k8s.cluster-name
+          operator: EQUALS
+          values:
+          - minikube
+        - key: k8s.namespace
+          operator: EQUALS
+          values:
+          - steadybit-shopping-demo
+        - key: k8s.deployment
+          operator: EQUALS
+          values:
+          - checkout
+- steps:
+  - type: wait
+    ignoreFailure: false
+    parameters:
+      duration: 20s
+  - type: action
+    ignoreFailure: false
+    parameters:
+      duration: 30s
+      statusCheckMode: atLeastOnce
+      podCountCheckMode: podCountLessThanDesiredCount
+      failEarly: true
+    customLabel: 'THEN: checkout is detected as down'
+    actionType: com.steadybit.extension_kubernetes.pod_count_check
+    radius:
+      targetType: com.steadybit.extension_kubernetes.kubernetes-deployment
+      predicate:
+        operator: AND
+        predicates:
+        - key: k8s.cluster-name
+          operator: EQUALS
+          values:
+          - minikube
+        - key: k8s.namespace
+          operator: EQUALS
+          values:
+          - steadybit-shopping-demo
+        - key: k8s.deployment
+          operator: EQUALS
+          values:
+          - checkout
+- steps:
+  - type: action
+    ignoreFailure: false
+    parameters:
+      duration: 140s
+    customLabel: Show Kubernetes events from the cluster
+    actionType: com.steadybit.extension_kubernetes.kubernetes_logs
+    radius:
+      targetType: com.steadybit.extension_kubernetes.kubernetes-cluster
+      predicate:
+        operator: AND
+        predicates:
+        - key: k8s.cluster-name
+          operator: EQUALS
+          values:
+          - minikube
+- steps:
+  - type: action
+    ignoreFailure: false
+    parameters:
+      duration: 140s
+    customLabel: Show pod count metrics for the cluster
+    actionType: com.steadybit.extension_kubernetes.pod_count_metric
+    radius:
+      targetType: com.steadybit.extension_kubernetes.kubernetes-cluster
+      predicate:
+        operator: AND
+        predicates:
+        - key: k8s.cluster-name
+          operator: EQUALS
+          values:
+          - minikube

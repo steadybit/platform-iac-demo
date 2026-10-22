@@ -1,0 +1,24 @@
+key: CHK
+name: Checkout
+logoId: '2'
+logoColor: rgb(150, 169, 255)
+allowedEnvironments:
+- Checkout
+allowedActions:
+- com.steadybit.extension_kubernetes.pod_count_check
+- com.steadybit.extension_kubernetes.kubernetes_logs
+- wait
+- com.steadybit.extension_container.stress_cpu
+- service-validation
+- com.steadybit.extension_http.check.periodically
+- com.steadybit.extension_container.fill_mem
+- com.steadybit.extension_kubernetes.pod_count_metric
+- com.steadybit.extension_container.network_blackhole
+- com.steadybit.extension_container.stop
+members:
+- email: team-owner@example.com
+  role: OWNER
+- email: developer-1@example.com
+  role: MEMBER
+- email: developer-2@example.com
+  role: MEMBER

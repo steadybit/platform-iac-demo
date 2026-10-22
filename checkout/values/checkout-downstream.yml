@@ -1,0 +1,6 @@
+k8sClusterName: minikube
+k8sNamespace: steadybit-shopping-demo
+k8sDeployment: checkout
+httpUpstreamEndpoint: http://gateway.steadybit-shopping-demo.svc.cluster.local/products
+httpSuccessRate: '95'
+recoveryTime: 60s

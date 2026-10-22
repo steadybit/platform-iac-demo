@@ -1,0 +1,4 @@
+name: Checkout
+query: >-
+  (k8s.cluster-name="minikube" AND k8s.namespace="steadybit-shopping-demo" AND k8s.deployment="checkout")
+  OR (k8s.cluster-name="minikube" AND target.type="com.steadybit.extension_kubernetes.kubernetes-cluster")

@@ -1,0 +1,29 @@
+name: Checkout
+team: CHK
+environment: Checkout
+logoId: service
+logoColor: blue
+query: >-
+  k8s.cluster-name="minikube" AND k8s.namespace="steadybit-shopping-demo" AND k8s.deployment="checkout"
+validations:
+  - type: action
+    customLabel: HTTP GET /products has no errors
+    ignoreFailure: false
+    parameters:
+      headers: []
+      method: GET
+      successRate: 100
+      maxConcurrent: 5
+      responseTime: 500ms
+      requestsPerSecond: 2
+      url: http://gateway.steadybit-shopping-demo.svc.cluster.local/products
+      failEarly: false
+      responseTimeMeasurement: TIME_TO_FIRST_BYTE
+      followRedirects: false
+      readTimeout: 5s
+      connectTimeout: 5s
+      insecureSkipVerify: false
+      responseTimeMode: NO_VERIFICATION
+      statusCode: 200-299
+    actionType: com.steadybit.extension_http.check.periodically
+serviceProfile: Steadybit Starter

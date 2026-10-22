@@ -1,0 +1,21 @@
+name: Chaos experiments
+on:
+  workflow_dispatch:
+
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    name: Team Checkout
+    permissions:
+      contents: read
+    env:
+      # For an on-prem platform, also set STEADYBIT_URL, e.g. from a repository variable.
+      STEADYBIT_TOKEN: ${{ secrets.STEADYBIT_TOKEN }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Steadybit CLI
+        uses: steadybit/cli@v6
+
+      - name: Run the team's experiments
+        run: steadybit experiment run -f checkout/experiments -R --yes --timeout 15m
